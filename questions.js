@@ -1,0 +1,127 @@
+/* 逻辑小勇士：60关多类型题库与互动玩法 */
+(function () {
+  const Q = (type,title,q,skill,answer,hints,extra={}) => ({type,title,q,skill,answer,hints,...extra});
+  const bank = [
+    [
+      Q("sequence","整理书包","明天要上学了。请把整理书包的步骤排成合理顺序。","流程排序",["查看课程表","找出课本","放进书包","拉好拉链"],["先确认明天要带什么，最后才拉上拉链。","先看课程表，再找书、装包，最后拉好拉链。"],{cards:["查看课程表","找出课本","放进书包","拉好拉链"]}),
+      Q("choice","修好自行车","修车步骤：检查车轮 → 找到漏气处 →（？）→ 再次检查。缺少哪一步？","流程规划","给轮胎打气",["找到漏气处之后，要先处理轮胎。","处理轮胎后，再检查是否修好。"],{options:["给轮胎打气","骑车出门","洗车","锁车"]}),
+      Q("sequence","种下种子","把种花的步骤按先后顺序排列。","流程排序",["准备花盆和泥土","挖一个小坑","放入种子","盖土并浇水"],["种子要先放进坑里，再盖土。","先准备工具，再挖坑、放种子、盖土浇水。"],{cards:["准备花盆和泥土","挖一个小坑","放入种子","盖土并浇水"]}),
+      Q("choice","手工小达人","开始做手工前，最适合先做哪件事？","流程规划","准备材料",["先把需要的东西准备齐。","材料准备好，后面才不会手忙脚乱。"],{options:["准备材料","马上剪纸","把作品收进书包","关灯睡觉"]}),
+      Q("sequence","完成作业","把完成作业的步骤排好。","流程排序",["准备文具","读懂题目","认真作答","检查答案"],["先准备，再理解任务，最后检查。","检查应该放在作答之后。"],{cards:["准备文具","读懂题目","认真作答","检查答案"]}),
+      Q("choice","给植物浇水","照顾植物：看看泥土干不干 →（？）→ 慢慢浇水 → 收好水壶。","流程规划","拿水壶装水",["浇水前，先准备好水。","想一想浇水前需要什么工具。"],{options:["拿水壶装水","拔掉叶子","把花盆倒过来","摘下花朵"]}),
+      Q("sequence","寄出明信片","寄明信片的步骤应该怎样安排？","流程排序",["写好祝福","写收件地址","贴上邮票","投入邮筒"],["先写内容和地址，贴好邮票再寄出。","邮票贴好以后才能投入邮筒。"],{cards:["写好祝福","写收件地址","贴上邮票","投入邮筒"]}),
+      Q("choice","过马路","准备过马路时，第一件应该做什么？","流程规划","停在路边观察",["安全第一，先停下来。","观察车辆和信号灯后再行动。"],{options:["停在路边观察","闭上眼睛跑","低头看玩具","追着球冲出去"]}),
+      Q("sequence","包装礼物","把包装礼物的步骤排成合理顺序。","流程排序",["准备礼物和包装纸","把礼物放在纸中间","包好并贴上胶带","系上蝴蝶结"],["先准备，再包起来，最后装饰。","蝴蝶结是最后的装饰步骤。"],{cards:["准备礼物和包装纸","把礼物放在纸中间","包好并贴上胶带","系上蝴蝶结"]}),
+      Q("choice","洗苹果找错误","小明洗苹果：①拿苹果 ②擦干苹果 ③用清水冲洗 ④吃苹果。哪一步放错了位置？","流程规划","②擦干苹果",["苹果应该先洗干净，再擦干。","擦干放在冲洗之前不合理。"],{options:["①拿苹果","②擦干苹果","③用清水冲洗","④吃苹果"]})
+    ],
+    [
+      Q("maze","森林小路","小狐狸从左上角出发，到右下角宝箱。先安排方向，再点击执行！","流程规划",true,["先沿最上面向右，再沿最右边向下。","路线要避开灰色石头。"],{walls:[[1,1],[1,2],[2,1]]}),
+      Q("coordinate","找到宝藏格","地图有4列。宝藏在从左数第3列、从上数第2行。点击正确的格子。","流程规划","C2",["先数列，再数行。","第3列是C，第2行是2。"]}),
+      Q("choice","镜子里的箭头","镜子放在图案右边。箭头“⬅️”照镜子后会变成什么？","流程规划","➡️",["左右方向在镜子里会反过来。","向左的箭头会变成向右。"],{display:"⬅️　🪞　❓",options:["⬅️","➡️","⬆️","⬇️"]}),
+      Q("choice","转向练习","小车面朝北，向右转一次后，它面朝哪个方向？","流程规划","东",["面朝北时，右手指向东。","顺时针转四分之一圈。"],{display:"⬆️　向右转 ↻",options:["北","南","东","西"]}),
+      Q("maze","绕开石头","小狐狸从左上角出发到右下角。安排一条不碰石头的路线。","流程规划",true,["先沿最左边向下，再沿最下面向右。","不要走进灰色石头格。"],{walls:[[0,1],[1,1],[2,3]]}),
+      Q("coordinate","棋盘寻点","棋盘从左到右是A、B、C、D，从上到下是1、2、3、4。小猫在B列第4行，点击它的位置。","流程规划","B4",["列字母在前，行数字在后。","B列和第4行交叉的位置。"]}),
+      Q("choice","连续转弯","机器人面朝东，先左转，再右转。最后面朝哪里？","流程规划","东",["向东左转朝北，再向右转回到东。","两个相反方向的转弯抵消了。"],{display:"➡️　左转 ↶　右转 ↷",options:["北","南","东","西"]}),
+      Q("choice","图形翻转","把图形“↗”左右翻转，应该得到哪个方向？","流程规划","↖",["左右翻转后，斜线朝左上。","想象镜子放在图形右边。"],{display:"↗　🪞　❓",options:["↖","↘","↙","↗"]}),
+      Q("maze","海湾通道","从左上角出发，沿空格走到右下角。点击方向规划路线。","流程规划",true,["先向右一步，再向下绕开中间的障碍。","每一步都要避开石头。"],{walls:[[0,2],[1,2],[2,0]]}),
+      Q("coordinate","宝箱坐标","宝箱在从左往右第4列、从上往下第3行。它的坐标是什么？","流程规划","D3",["先确定列，再确定行。","第4列是D，第3行是3。"]})
+    ],
+    [
+      Q("choice","颜色接龙","观察颜色规律，下一块应该是什么？","规律归纳","🔵",["红、蓝轮流出现。","前一个是红色，接下来轮到蓝色。"],{display:"🔴　🔵　🔴　🔵　🔴　❓",options:["🔴","🔵","🟡","🟢"]}),
+      Q("choice","数字台阶","2、4、6、8、？ 下一个数字是多少？","规律归纳","10",["每次都增加2。","8再加2是多少？"],{options:["9","10","11","12"]}),
+      Q("choice","找不同家族","下面哪个图形和其他三个不是同一类？","规律归纳","🥕",["三个是水果，一个是蔬菜。","想想哪些通常长在果树上。"],{display:"🍎　🍐　🥕　🍊",options:["🍎","🍐","🥕","🍊"]}),
+      Q("choice","形状规律","⭐ 🔺 ⭐ 🔺 ⭐ ？ 下一张是什么？","规律归纳","🔺",["星星和三角形交替出现。","星星后面一直跟着三角形。"],{display:"⭐　🔺　⭐　🔺　⭐　❓",options:["⭐","🔺","🟦","❤️"]}),
+      Q("choice","跳跳数字","5、10、15、20、？ 下一个数字是多少？","规律归纳","25",["每次增加5。","20再加5。"],{options:["22","24","25","30"]}),
+      Q("choice","谁没有翅膀","哪一个动物和其他三个最不一样？","规律归纳","🐟",["三个能在空中飞，鱼生活在水里。","观察它们生活的地方。"],{display:"🦋　🐦　🐝　🐟",options:["🦋","🐦","🐝","🐟"]}),
+      Q("choice","图案接力","🌙 🌙 ⭐ 🌙 🌙 ⭐ 🌙 🌙 ？ 下一个是什么？","规律归纳","⭐",["两个弯月亮后面跟一颗星星。","每组三个图案重复一次。"],{display:"🌙　🌙　⭐　🌙　🌙　⭐　🌙　🌙　❓",options:["🌙","⭐","☀️","☁️"]}),
+      Q("choice","变化规律","1、3、6、10、？ 每次增加的数越来越大。","规律归纳","15",["依次增加2、3、4，下一次增加5。","10再加5。"],{options:["12","13","14","15"]}),
+      Q("choice","交通工具分类","哪一个不是在地面上行驶的交通工具？","规律归纳","✈️",["飞机在天空中飞行。","其他三个都在地面移动。"],{display:"🚗　🚌　🚲　✈️",options:["🚗","🚌","🚲","✈️"]}),
+      Q("choice","双重规律","🔴 🔵 🔵 🔴 🔵 🔵 🔴 ？ ？ 找出后面两个图案。","规律归纳","🔵 🔵",["每组都是一个红色，接着两个蓝色。","第三组也要保持相同顺序。"],{display:"🔴　🔵　🔵　🔴　🔵　🔵　🔴　❓　❓",options:["🔵 🔵","🔴 🔴","🔵 🔴","🔴 🔵"]})
+    ],
+    [
+      Q("choice","谁拿了钥匙","钥匙不在红盒。小兔说钥匙在蓝盒，而且小兔说的是真的。钥匙在哪？","逻辑推理","蓝盒",["小兔的话是真的，直接使用这条线索。","钥匙在蓝盒。"],{options:["红盒","蓝盒","绿盒"]}),
+      Q("match","动物找食物","请把每只动物和它最喜欢的食物配对。","逻辑推理",true,["想一想每种动物通常吃什么。","小兔吃胡萝卜，小猫吃鱼，小狗啃骨头。"],{pairs:{"小兔":"🥕 胡萝卜","小猫":"🐟 鱼","小狗":"🦴 骨头"}}),
+      Q("choice","谁说了真话","宝物在红、蓝、绿箱之一。小熊说“在红箱”，小兔说“在蓝箱”。已知只有小熊说真话。宝物在哪？","逻辑推理","红箱",["小熊说真话，所以宝物在红箱。","小兔的话必须是假话。"],{options:["红箱","蓝箱","绿箱"]}),
+      Q("sequence","排队线索","小明在最前面，小刚在最后面，小红在他们中间。请从前到后排列。","逻辑推理",["小明","小红","小刚"],["中间只剩小红。","最前面小明，最后面小刚。"],{cards:["小明","小红","小刚"]}),
+      Q("choice","找丢失的球","球不是在桌下。它在盒子或椅子上。小猫看见球在椅子上。球在哪里？","逻辑推理","椅子上",["排除桌下，再使用小猫看到的线索。","小猫看见球在椅子上。"],{options:["桌下","盒子里","椅子上","门外"]}),
+      Q("choice","只有一个正确","三个抽屉中只有一个有糖。甲说“糖在1号”，乙说“糖不在1号”，丙说“糖在2号”。已知甲和乙中只有一句真话，丙说假话。糖在哪？","逻辑推理","1号",["丙说假话，排除2号。","糖在1号时，甲真、乙假，符合条件。"],{options:["1号","2号","3号"]}),
+      Q("match","文具找主人","请根据线索，把物品配给主人：小美的东西是铅笔，小刚的东西是尺子，小乐的东西是橡皮。","逻辑推理",true,["先看清每个人对应的物品。","每件物品只能配给一个人。"],{pairs:{"小美":"✏️ 铅笔","小刚":"📏 尺子","小乐":"🧽 橡皮"}}),
+      Q("choice","谁最后到学校","小杰比小雨早到，小雨比小林早到。谁最后到？","逻辑推理","小林",["把“早于”连起来。","顺序是小杰、小雨、小林。"],{options:["小杰","小雨","小林"]}),
+      Q("sequence","座位安排","三位同学坐一排。小安坐左边，小冬坐右边，小夏坐中间。请从左到右排列。","逻辑推理",["小安","小夏","小冬"],["题目已经给出左、中、右的位置。","按左边、中间、右边排列。"],{cards:["小安","小夏","小冬"]}),
+      Q("choice","推理小侦探","红球、蓝球、黄球只有一个在袋子里。小明说“不是红球”，小华说“是蓝球”，两句话都是真的。袋子里是什么球？","逻辑推理","蓝球",["两句话都是真的。","蓝球既不是红球，又符合第二条线索。"],{options:["红球","蓝球","黄球"]})
+    ],
+    [
+      Q("choice","机器人分拣","规则：如果水果是红色，就放红篮；否则放蓝篮。绿色苹果应该放哪？","条件判断","蓝篮",["绿色不是红色，所以执行“否则”。","不符合红色条件，就放蓝篮。"],{options:["红篮","蓝篮"]}),
+      Q("choice","双条件门","门要同时满足两个条件才能开：有钥匙，并且说出密码。小勇士有钥匙，但不知道密码。门会开吗？","条件判断","不会开",["“并且”表示两个条件都要满足。","少了密码，门就不能开。"],{options:["会开","不会开"]}),
+      Q("choice","雨天计划","如果下雨就带雨伞；如果不下雨就戴遮阳帽。今天没有下雨，应该带什么？","条件判断","遮阳帽",["没有下雨，走第二条规则。","不下雨就戴遮阳帽。"],{options:["雨伞","遮阳帽"]}),
+      Q("choice","指令追踪","机器人从数字1开始：先加2，再乘2。最后是多少？","条件判断","6",["先算1+2，再把结果乘2。","3乘2等于6。"],{options:["5","6","7","8"]}),
+      Q("choice","进入秘密基地","进入基地需要：年龄满7岁，或者有队长通行证。小乐6岁，但有通行证，可以进入吗？","条件判断","可以",["“或者”只需要满足其中一个条件。","小乐虽然不到7岁，但有通行证。"],{options:["可以","不可以"]}),
+      Q("choice","天气小管家","温度低于10度穿外套，否则穿短袖。今天是8度，应该穿什么？","条件判断","外套",["8比10小，符合第一个条件。","低于10度就穿外套。"],{options:["外套","短袖"]}),
+      Q("choice","程序小火车","小火车从第2站出发：向前走3站，再后退1站。最后在哪一站？","条件判断","第4站",["2往前3站到5，再退1站。","最后停在第4站。"],{options:["第3站","第4站","第5站","第6站"]}),
+      Q("choice","图书馆借书","借书规则：有借书卡，并且没有超期未还的书。小明有借书卡，但有一本书超期了。他能借新书吗？","条件判断","不能",["两个条件要同时满足。","其中一个条件不满足，就不能借。"],{options:["能","不能"]}),
+      Q("choice","颜色交通灯","绿灯可以走，红灯要停。现在是红灯，小车应该怎么做？","条件判断","停下来",["红灯对应“停”。","先遵守交通规则。"],{options:["继续走","停下来"]}),
+      Q("multi","两项都要满足","机器人启动需要同时满足：电池有电、开关打开。现在电池有电，开关也打开。请选择启动所需的两项条件。","条件判断",["电池有电","开关打开"],["“同时满足”表示两项都要选。","不要漏掉任何一个条件。"],{options:["电池有电","开关打开","车轮是红色","窗户打开"]})
+    ],
+    [
+      Q("choice","天平找轻重","苹果比梨重，梨比橘子重。最轻的是谁？","数字逻辑","橘子",["从重到轻排：苹果、梨、橘子。","梨比橘子重，所以橘子更轻。"],{options:["苹果","梨","橘子"]}),
+      Q("choice","量杯小实验","有5杯水，倒出2杯后，还剩几杯？","数字逻辑","3杯",["从5杯里拿走2杯。","5减2等于3。"],{options:["1杯","2杯","3杯","4杯"]}),
+      Q("budget","金币购物","你有10枚金币。请选择刚好花掉10枚的购物组合。","数字逻辑",["面包（4枚）","果汁（6枚）"],["先把选中的价格加起来。","4加6刚好是10。"],{items:[["苹果（3枚）",3],["面包（4枚）",4],["牛奶（5枚）",5],["果汁（6枚）",6]],target:10}),
+      Q("choice","安排电影时间","电影下午3点开始。要提前10分钟入场，路上要30分钟。最晚几点出发？","数字逻辑","2:20",["要在2:50到达电影院。","从2:50往前推30分钟。"],{options:["2:00","2:10","2:20","2:30"]}),
+      Q("choice","谁更重","小狗重8千克，小猫重4千克。两只小动物一共重多少千克？","数字逻辑","12千克",["把两只动物的重量加起来。","8加4等于12。"],{options:["4千克","8千克","12千克","16千克"]}),
+      Q("choice","绳子分段","一根12米长的绳子，剪掉4米做跳绳，还剩多少米？","数字逻辑","8米",["总长度减去剪掉的长度。","12减4等于8。"],{options:["6米","7米","8米","9米"]}),
+      Q("budget","文具采购","你有15枚金币。请选择买下笔记本和玩具车，看看还剩多少。","数字逻辑",["笔记本（5枚）","玩具车（8枚）"],["先选出题目指定的两样物品。","5加8等于13，15减13还剩2。"],{items:[["铅笔（2枚）",2],["笔记本（5枚）",5],["玩具车（8枚）",8],["皮球（9枚）",9]],target:13,remain:2}),
+      Q("choice","课程时间表","画画课10:00开始，持续40分钟；休息10分钟后上音乐课。音乐课几点开始？","数字逻辑","10:50",["先加40分钟，再加10分钟。","10点加50分钟是10:50。"],{options:["10:40","10:45","10:50","11:00"]}),
+      Q("choice","平均分水果","有12个橘子，平均放进3个篮子。每个篮子放几个？","数字逻辑","4个",["把12平均分成3份。","12除以3等于4。"],{options:["3个","4个","5个","6个"]}),
+      Q("choice","野餐怎么安排","你有12枚金币。三明治6枚、果汁4枚、水果7枚。买三明治和果汁后，还剩多少？","数字逻辑","2枚",["先算6加4，再从12里面减去。","12减10等于2。"],{options:["1枚","2枚","3枚","4枚"]})
+    ]
+  ];
+  levels = bank.flat();
+  if (levels.length !== 60) throw new Error("题库数量异常：" + levels.length);
+  function shuffle(a){const b=a.slice();for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+  function sameSet(a,b){return a.length===b.length&&a.every(x=>b.includes(x));}
+  window.play = function () {
+    const l=levels[current],w=Math.floor(current/10),p=panel();
+    p.append(node("div",worlds[w][0]+" "+worlds[w][1]+" · 第 "+(current+1)+"/60 关","tag"));
+    p.append(node("h2",l.title,"title"),node("p",l.q,"question"),node("div","训练能力："+l.skill,"muted"));
+    if(l.display)p.append(node("div",l.display,"sequence center"));
+    let f=node("div","","feedback");f.id="feedback";
+    if(l.type==="sequence"){
+      const out=node("div","按正确顺序点击卡片","sequence center");out.id="sequence";p.append(out);
+      const g=node("div",undefined,"choices");
+      shuffle(l.cards).forEach(v=>g.append(button(v,()=>{if(finished||selected.includes(v))return;selected.push(v);out.textContent=selected.map((x,i)=>(i+1)+". "+x).join(" → ");if(selected.length===l.answer.length)answer(JSON.stringify(selected)===JSON.stringify(l.answer));},"choice")));
+      p.append(g,button("↩️ 撤销一步",()=>{if(!finished){selected.pop();out.textContent=selected.length?selected.join(" → "):"按正确顺序点击卡片";}},"btn gray"));
+    } else if(l.type==="maze"){
+      let pos=[0,0],moves=[],running=false,grid=node("div",undefined,"maze");grid.id="maze";p.append(grid);
+      const route=node("div","已安排：","sequence center");route.id="routeText";p.append(route);
+      function draw(){grid.replaceChildren();for(let r=0;r<4;r++)for(let c=0;c<4;c++){const wall=l.walls.some(z=>z[0]===r&&z[1]===c),hero=pos[0]===r&&pos[1]===c,goal=r===3&&c===3;grid.append(node("div",hero?heroes[data.hero][0]:wall?"🪨":goal?"🎁":"","cell "+(hero?"heroCell":wall?"wall":goal?"goal":"")));}}
+      const arrows=node("div",undefined,"arrows");
+      [["⬆️",-1,0],["⬅️",0,-1],["⬇️",1,0],["➡️",0,1]].forEach(([em,dr,dc])=>arrows.append(button(em,()=>{if(!running&&!finished&&moves.length<16){moves.push([dr,dc,em]);route.textContent="已安排："+moves.map(x=>x[2]).join(" ");}},"choice")));
+      p.append(arrows);
+      const actions=node("div",undefined,"actions");
+      actions.append(button("▶️ 开始执行",async()=>{if(running||finished||!moves.length)return;running=true;pos=[0,0];draw();const token=++runToken;for(const [dr,dc] of moves){await new Promise(r=>setTimeout(r,320));if(token!==runToken)return;const nr=pos[0]+dr,nc=pos[1]+dc;if(nr<0||nr>3||nc<0||nc>3||l.walls.some(z=>z[0]===nr&&z[1]===nc)){running=false;answer(false);return;}pos=[nr,nc];draw();if(nr===3&&nc===3){running=false;answer(true);return;}}running=false;answer(false);},"btn green"),button("清空路线",()=>{if(!running&&!finished){moves=[];pos=[0,0];route.textContent="已安排：";draw();}},"btn gray"));
+      p.append(actions);draw();
+    } else if(l.type==="coordinate"){
+      const g=node("div",undefined,"choices");g.style.gridTemplateColumns="repeat(4,minmax(0,1fr))";g.style.maxWidth="360px";g.style.margin="16px auto";
+      for(let r=1;r<=4;r++)for(let c=0;c<4;c++){const cell=String.fromCharCode(65+c)+r;g.append(button(cell,()=>answer(cell===l.answer),"choice"));}
+      p.append(node("div","列字母在前，行数字在后","muted center"),g);
+    } else if(l.type==="match"){
+      const left=node("div",undefined,"choices"),right=node("div",undefined,"choices");let chosen=null;const matched=new Set();
+      p.append(node("p","先点左边动物，再点右边对应的食物。","muted"));
+      Object.keys(l.pairs).forEach(k=>left.append(button(k,()=>{if(!finished&&!matched.has(k)){chosen=k;left.querySelectorAll("button").forEach(b=>b.classList.toggle("selected",b.textContent===k));}},"choice")));
+      shuffle(Object.values(l.pairs)).forEach(v=>right.append(button(v,()=>{if(finished||!chosen)return;if(l.pairs[chosen]===v){matched.add(chosen);left.querySelectorAll("button").forEach(b=>{if(b.textContent===chosen)b.disabled=true;});right.querySelectorAll("button").forEach(b=>{if(b.textContent===v)b.disabled=true;});chosen=null;feedback("配对成功！继续找下一组。",true);if(matched.size===Object.keys(l.pairs).length)answer(true);}else{chosen=null;answer(false);left.querySelectorAll("button").forEach(b=>b.classList.remove("selected"));}},"choice")));
+      p.append(left,node("div","对应选项","muted center"),right);
+    } else if(l.type==="multi"||l.type==="budget"){
+      const picked=[];const g=node("div",undefined,"choices");
+      const opts=l.type==="budget"?l.items.map(x=>x[0]):l.options;
+      const total=node("div",l.type==="budget"?"已选金额：0 枚金币":"已选择：0 项","sequence center");
+      function refresh(){total.textContent=l.type==="budget"?"已选金额："+l.items.filter(x=>picked.includes(x[0])).reduce((s,x)=>s+x[1],0)+" 枚金币":"已选择："+picked.length+" 项";g.querySelectorAll("button").forEach(b=>b.classList.toggle("selected",picked.includes(b.textContent)));}
+      opts.forEach(v=>g.append(button(v,()=>{if(finished)return;const i=picked.indexOf(v);if(i>=0)picked.splice(i,1);else picked.push(v);refresh();},"choice")));
+      p.append(g,total,button("确认选择",()=>{const ok=sameSet(picked,l.answer);if(l.type==="budget"&&l.target!==undefined){const sum=l.items.filter(x=>picked.includes(x[0])).reduce((s,x)=>s+x[1],0);if(sum!==l.target){answer(false);return;}}answer(ok);},"btn green"));
+    } else {
+      const g=node("div",undefined,"choices");l.options.forEach(v=>g.append(button(v,()=>answer(v===l.answer),"choice")));p.append(g);
+    }
+    p.append(f);
+    const a=node("div",undefined,"actions");a.append(button("💡 提示",()=>hint(l),"btn orange"),button("🔄 重试",()=>start(current),"btn gray"),button("🗺️ 返回关卡",()=>show("levels"),"btn gray"));p.append(a);
+  };
+  show("home");
+})();
