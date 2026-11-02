@@ -1,7 +1,7 @@
-/* 逻辑小勇士：60关多类型题库与互动玩法 */
-(function () {
+// 逻辑小勇士六大世界60关题库数据；由 index.html 统一调用。
+(function(){
   const Q = (type,title,q,skill,answer,hints,extra={}) => ({type,title,q,skill,answer,hints,...extra});
-  const bank = [
+  window.LOGIC_QUESTION_BANK = [
     [
       Q("sequence","整理书包","明天要上学了。请把整理书包的步骤排成合理顺序。","流程排序",["查看课程表","找出课本","放进书包","拉好拉链"],["先确认明天要带什么，最后才拉上拉链。","先看课程表，再找书、装包，最后拉好拉链。"],{cards:["查看课程表","找出课本","放进书包","拉好拉链"]}),
       Q("choice","修好自行车","修车步骤：检查车轮 → 找到漏气处 →（？）→ 再次检查。缺少哪一步？","流程规划","给轮胎打气",["找到漏气处之后，要先处理轮胎。","处理轮胎后，再检查是否修好。"],{options:["给轮胎打气","骑车出门","洗车","锁车"]}),
@@ -44,7 +44,7 @@
       Q("choice","谁说了真话","宝物在红、蓝、绿箱之一。小熊说“在红箱”，小兔说“在蓝箱”。已知只有小熊说真话。宝物在哪？","逻辑推理","红箱",["小熊说真话，所以宝物在红箱。","小兔的话必须是假话。"],{options:["红箱","蓝箱","绿箱"]}),
       Q("sequence","排队线索","小明在最前面，小刚在最后面，小红在他们中间。请从前到后排列。","逻辑推理",["小明","小红","小刚"],["中间只剩小红。","最前面小明，最后面小刚。"],{cards:["小明","小红","小刚"]}),
       Q("choice","找丢失的球","球不是在桌下。它在盒子或椅子上。小猫看见球在椅子上。球在哪里？","逻辑推理","椅子上",["排除桌下，再使用小猫看到的线索。","小猫看见球在椅子上。"],{options:["桌下","盒子里","椅子上","门外"]}),
-      Q("choice","只有一个正确","三个抽屉中只有一个有糖。甲说“糖在1号”，乙说“糖不在1号”，丙说“糖在2号”。已知甲和乙中只有一句真话，丙说假话。糖在哪？","逻辑推理","1号",["丙说假话，排除2号。","糖在1号时，甲真、乙假，符合条件。"],{options:["1号","2号","3号"]}),
+      Q("choice","只有一个正确","糖在1号、2号、3号抽屉之一。甲说“糖不在3号”，乙说“糖在1号”。两人说的都是真话。糖在哪？","逻辑推理","1号",["丙说假话，排除2号。","糖在1号时，甲真、乙假，符合条件。"],{options:["1号","2号","3号"]}),
       Q("match","文具找主人","请根据线索，把物品配给主人：小美的东西是铅笔，小刚的东西是尺子，小乐的东西是橡皮。","逻辑推理",true,["先看清每个人对应的物品。","每件物品只能配给一个人。"],{pairs:{"小美":"✏️ 铅笔","小刚":"📏 尺子","小乐":"🧽 橡皮"}}),
       Q("choice","谁最后到学校","小杰比小雨早到，小雨比小林早到。谁最后到？","逻辑推理","小林",["把“早于”连起来。","顺序是小杰、小雨、小林。"],{options:["小杰","小雨","小林"]}),
       Q("sequence","座位安排","三位同学坐一排。小安坐左边，小冬坐右边，小夏坐中间。请从左到右排列。","逻辑推理",["小安","小夏","小冬"],["题目已经给出左、中、右的位置。","按左边、中间、右边排列。"],{cards:["小安","小夏","小冬"]}),
@@ -75,53 +75,4 @@
       Q("choice","野餐怎么安排","你有12枚金币。三明治6枚、果汁4枚、水果7枚。买三明治和果汁后，还剩多少？","数字逻辑","2枚",["先算6加4，再从12里面减去。","12减10等于2。"],{options:["1枚","2枚","3枚","4枚"]})
     ]
   ];
-  levels = bank.flat();
-  if (levels.length !== 60) throw new Error("题库数量异常：" + levels.length);
-  function shuffle(a){const b=a.slice();for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
-  function sameSet(a,b){return a.length===b.length&&a.every(x=>b.includes(x));}
-  window.play = function () {
-    const l=levels[current],w=Math.floor(current/10),p=panel();
-    p.append(node("div",worlds[w][0]+" "+worlds[w][1]+" · 第 "+(current+1)+"/60 关","tag"));
-    p.append(node("h2",l.title,"title"),node("p",l.q,"question"),node("div","训练能力："+l.skill,"muted"));
-    if(l.display)p.append(node("div",l.display,"sequence center"));
-    let f=node("div","","feedback");f.id="feedback";
-    if(l.type==="sequence"){
-      const out=node("div","按正确顺序点击卡片","sequence center");out.id="sequence";p.append(out);
-      const g=node("div",undefined,"choices");
-      shuffle(l.cards).forEach(v=>g.append(button(v,()=>{if(finished||selected.includes(v))return;selected.push(v);out.textContent=selected.map((x,i)=>(i+1)+". "+x).join(" → ");if(selected.length===l.answer.length)answer(JSON.stringify(selected)===JSON.stringify(l.answer));},"choice")));
-      p.append(g,button("↩️ 撤销一步",()=>{if(!finished){selected.pop();out.textContent=selected.length?selected.join(" → "):"按正确顺序点击卡片";}},"btn gray"));
-    } else if(l.type==="maze"){
-      let pos=[0,0],moves=[],running=false,grid=node("div",undefined,"maze");grid.id="maze";p.append(grid);
-      const route=node("div","已安排：","sequence center");route.id="routeText";p.append(route);
-      function draw(){grid.replaceChildren();for(let r=0;r<4;r++)for(let c=0;c<4;c++){const wall=l.walls.some(z=>z[0]===r&&z[1]===c),hero=pos[0]===r&&pos[1]===c,goal=r===3&&c===3;grid.append(node("div",hero?heroes[data.hero][0]:wall?"🪨":goal?"🎁":"","cell "+(hero?"heroCell":wall?"wall":goal?"goal":"")));}}
-      const arrows=node("div",undefined,"arrows");
-      [["⬆️",-1,0],["⬅️",0,-1],["⬇️",1,0],["➡️",0,1]].forEach(([em,dr,dc])=>arrows.append(button(em,()=>{if(!running&&!finished&&moves.length<16){moves.push([dr,dc,em]);route.textContent="已安排："+moves.map(x=>x[2]).join(" ");}},"choice")));
-      p.append(arrows);
-      const actions=node("div",undefined,"actions");
-      actions.append(button("▶️ 开始执行",async()=>{if(running||finished||!moves.length)return;running=true;pos=[0,0];draw();const token=++runToken;for(const [dr,dc] of moves){await new Promise(r=>setTimeout(r,320));if(token!==runToken)return;const nr=pos[0]+dr,nc=pos[1]+dc;if(nr<0||nr>3||nc<0||nc>3||l.walls.some(z=>z[0]===nr&&z[1]===nc)){running=false;answer(false);return;}pos=[nr,nc];draw();if(nr===3&&nc===3){running=false;answer(true);return;}}running=false;answer(false);},"btn green"),button("清空路线",()=>{if(!running&&!finished){moves=[];pos=[0,0];route.textContent="已安排：";draw();}},"btn gray"));
-      p.append(actions);draw();
-    } else if(l.type==="coordinate"){
-      const g=node("div",undefined,"choices");g.style.gridTemplateColumns="repeat(4,minmax(0,1fr))";g.style.maxWidth="360px";g.style.margin="16px auto";
-      for(let r=1;r<=4;r++)for(let c=0;c<4;c++){const cell=String.fromCharCode(65+c)+r;g.append(button(cell,()=>answer(cell===l.answer),"choice"));}
-      p.append(node("div","列字母在前，行数字在后","muted center"),g);
-    } else if(l.type==="match"){
-      const left=node("div",undefined,"choices"),right=node("div",undefined,"choices");let chosen=null;const matched=new Set();
-      p.append(node("p","先点左边动物，再点右边对应的食物。","muted"));
-      Object.keys(l.pairs).forEach(k=>left.append(button(k,()=>{if(!finished&&!matched.has(k)){chosen=k;left.querySelectorAll("button").forEach(b=>b.classList.toggle("selected",b.textContent===k));}},"choice")));
-      shuffle(Object.values(l.pairs)).forEach(v=>right.append(button(v,()=>{if(finished||!chosen)return;if(l.pairs[chosen]===v){matched.add(chosen);left.querySelectorAll("button").forEach(b=>{if(b.textContent===chosen)b.disabled=true;});right.querySelectorAll("button").forEach(b=>{if(b.textContent===v)b.disabled=true;});chosen=null;feedback("配对成功！继续找下一组。",true);if(matched.size===Object.keys(l.pairs).length)answer(true);}else{chosen=null;answer(false);left.querySelectorAll("button").forEach(b=>b.classList.remove("selected"));}},"choice")));
-      p.append(left,node("div","对应选项","muted center"),right);
-    } else if(l.type==="multi"||l.type==="budget"){
-      const picked=[];const g=node("div",undefined,"choices");
-      const opts=l.type==="budget"?l.items.map(x=>x[0]):l.options;
-      const total=node("div",l.type==="budget"?"已选金额：0 枚金币":"已选择：0 项","sequence center");
-      function refresh(){total.textContent=l.type==="budget"?"已选金额："+l.items.filter(x=>picked.includes(x[0])).reduce((s,x)=>s+x[1],0)+" 枚金币":"已选择："+picked.length+" 项";g.querySelectorAll("button").forEach(b=>b.classList.toggle("selected",picked.includes(b.textContent)));}
-      opts.forEach(v=>g.append(button(v,()=>{if(finished)return;const i=picked.indexOf(v);if(i>=0)picked.splice(i,1);else picked.push(v);refresh();},"choice")));
-      p.append(g,total,button("确认选择",()=>{const ok=sameSet(picked,l.answer);if(l.type==="budget"&&l.target!==undefined){const sum=l.items.filter(x=>picked.includes(x[0])).reduce((s,x)=>s+x[1],0);if(sum!==l.target){answer(false);return;}}answer(ok);},"btn green"));
-    } else {
-      const g=node("div",undefined,"choices");l.options.forEach(v=>g.append(button(v,()=>answer(v===l.answer),"choice")));p.append(g);
-    }
-    p.append(f);
-    const a=node("div",undefined,"actions");a.append(button("💡 提示",()=>hint(l),"btn orange"),button("🔄 重试",()=>start(current),"btn gray"),button("🗺️ 返回关卡",()=>show("levels"),"btn gray"));p.append(a);
-  };
-  show("home");
 })();
