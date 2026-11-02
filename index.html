@@ -21,7 +21,10 @@ const levels=window.LOGIC_QUESTION_BANK.flat().map((q,i)=>({
  path:q.type==='maze'?[[0,0],[3,3]]:undefined,
  pairs:q.pairs||null,
  items:q.items||null,
- target:q.target
+ groups:q.groups||null,
+ categories:q.categories||[],
+ target:q.target,
+ budget:q.budget||q.target
 }));
 const worlds=[['🌿','萌芽森林'],['🏝️','贝壳海湾'],['🏰','谜题城堡'],['🚀','星际基地'],['☁️','天空之城'],['🌈','彩虹王国']];
 const heroes=[['🦊','小狐狸'],['🐼','熊猫队长'],['🐰','兔兔侦探'],['🐲','小龙勇士']];
@@ -66,6 +69,7 @@ function wrongMessage(l){
   if(l.type==='maze')return '路线还没成功到达宝箱。检查每一步方向，避开石头，也别走出地图。';
   if(l.type==='coordinate')return '位置再核对一下：先找横向的列字母，再找纵向的行数字。';
   if(l.type==='match')return '这组线索暂时对不上。看看动物或物品的特点，再试一次。';
+  if(l.type==='classify'||l.type==='ruleSort')return '先观察每个物品的特点，再对照分类名称或题目规则。';
   if(l.type==='multi')return '再检查是否漏选或多选。题目要求同时满足的条件，一个也不能少。';
   if(l.type==='budget')return '再算一算选中物品的总价，看看是否符合预算和购物目标。';
   if(l.skill==='规律思维')return '先别急着选。观察相邻数字或图案，找找它们重复或变化的规律。';
@@ -120,13 +124,35 @@ play = function(){
       right.append(b);
     });
     layout.append(left,right);head.append(layout);
+  }else if(l.type==='classify'||l.type==='ruleSort'){
+    head.append(node('p','先点一个物品，再点它应该进入的分类。','muted center'));
+    const entries=Object.entries(l.groups||{}),assigned=new Set();let active=null;
+    const items=node('div',undefined,'choices');items.style.gridTemplateColumns='repeat(2,minmax(0,1fr))';
+    const bins=node('div',undefined,'actions');
+    const itemButtons=new Map();
+    entries.slice().sort(()=>Math.random()-.5).forEach(([item])=>{
+      const b=button(item,()=>{if(finished||assigned.has(item))return;active=item;itemButtons.forEach((v,k)=>v.classList.toggle('selected',k===item));},'choice');
+      itemButtons.set(item,b);items.append(b);
+    });
+    l.categories.forEach(category=>bins.append(button('放进「'+category+'」',()=>{
+      if(finished||!active)return;
+      if(l.groups[active]===category){
+        assigned.add(active);const b=itemButtons.get(active);b.disabled=true;b.classList.add('selected');active=null;
+        feedback('分类正确！继续完成剩下的项目。',true);
+        if(assigned.size===entries.length)answer(true);
+      }else{
+        attempt++;beep(false);active=null;itemButtons.forEach(b=>b.classList.remove('selected'));
+        feedback('这个物品好像不属于这一组，再观察一下。',false);
+      }
+    },'btn orange')));
+    head.append(items,bins);
   }else if(l.type==='multi'||l.type==='budget'){
     const opts=l.type==='budget'?(l.items||[]).map(x=>x[0]):l.options;
-    const total=node('div',l.type==='budget'?'已选金额：0 枚金币':'已选择：0 项','sequence center');
+    const total=node('div',l.type==='budget'?'预算：'+l.budget+'枚 · 已选0枚 · 剩余'+l.budget+'枚':'已选择：0 项','sequence center');
     const g=node('div',undefined,'choices');
     function refresh(){
       const sum=l.type==='budget'?(l.items||[]).filter(x=>selected.includes(x[0])).reduce((n,x)=>n+x[1],0):0;
-      total.textContent=l.type==='budget'?'已选金额：'+sum+' 枚金币':'已选择：'+selected.length+' 项';
+      total.textContent=l.type==='budget'?'预算：'+l.budget+'枚 · 已选'+sum+'枚 · 剩余'+(l.budget-sum)+'枚':'已选择：'+selected.length+' 项';
       g.querySelectorAll('button').forEach(b=>b.classList.toggle('selected',selected.includes(b.textContent)));
     }
     opts.forEach(v=>g.append(button(v,()=>{
